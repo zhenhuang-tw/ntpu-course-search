@@ -29,5 +29,13 @@ export default defineNuxtConfig({
     prerender: {
       routes: ['/']
     }
-  }
+  },
+  
+  // 定義路由規則
+  routeRules: {
+    // 針對搜尋結果頁面實施 30 分鐘 (1800 秒) 的 SWR 快取
+    '/search': { 
+      swr: 1800 
+    }
+  },
 })
