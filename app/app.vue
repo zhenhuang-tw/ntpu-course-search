@@ -52,7 +52,7 @@ onMounted(() => {
           </li>
         </ul>
         <ul>
-          <li><NuxtLink to="/">搜尋頁面</NuxtLink></li>
+          <li><NuxtLink to="/">搜尋課程</NuxtLink></li>
           <li>
             <a 
               href="https://sea.cc.ntpu.edu.tw/pls/dev_stud/course_query_all.CHI_MAIN" 
