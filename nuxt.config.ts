@@ -6,7 +6,7 @@ const appDomain = 'https://ntpu-course-search.pages.dev'
 export default defineNuxtConfig({
   compatibilityDate: '2026-05-10',
   devtools: { enabled: true },
-  css: ['@picocss/pico/css/pico.min.css'],
+  css: ['@picocss/pico/css/pico.pumpkin.min.css'],
   
   app: {
     head: {
