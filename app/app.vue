@@ -110,7 +110,7 @@ main {
 }
 /* 警語區塊樣式微調 */
 .global-disclaimer {
-  margin-bottom: 2rem;
+  margin-bottom: 0.5rem;
   padding: 1rem;
   border-left: 4px solid var(--pico-secondary-border);
   background-color: var(--pico-card-background-color);
