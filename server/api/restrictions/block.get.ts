@@ -1,8 +1,8 @@
-import { defineEventHandler, getQuery } from 'h3'
+import { getQuery } from 'h3'
 import * as cheerio from 'cheerio'
 import iconv from 'iconv-lite'
 
-export default defineEventHandler(async (event) => {
+export default defineCachedEventHandler(async (event) => {
   const query = getQuery(event)
   // 參數已依要求改為 department 與 course
   const department = query.department as string
@@ -73,5 +73,14 @@ export default defineEventHandler(async (event) => {
 
   } catch (error: any) {
     return { success: false, message: error.message || '伺服器發生錯誤', data: null }
+  }
+}, {
+  // 設定快取規則
+  maxAge: 60 * 60 * 24 * 7, // 快取 7 天
+  swr: true,
+  // 自訂快取鍵值 (Cache Key)：依據課號、學年、學期來區分
+  getKey: (event) => {
+    const query = getQuery(event)
+    return `block-${query.department}-${query.course}`
   }
 })
