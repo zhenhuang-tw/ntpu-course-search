@@ -68,7 +68,7 @@ const isGuideVisible = ref(false)
 </script>
 
 <template>
-  <section>
+  <section class="container">
     <hgroup>
       <h1>課程搜尋</h1>
       <p>請輸入查詢條件，開始探索學期課程</p>

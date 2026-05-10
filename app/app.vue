@@ -76,8 +76,8 @@ onMounted(() => {
       </nav>
     </header>
 
-    <main class="container">
-      <article class="global-disclaimer">
+    <main>
+      <article class="global-disclaimer container">
         <small>
           這不是國立臺北大學製作的課程查詢系統，不保證資訊正確無誤，請以資訊中心製作的
           <NuxtLink to="https://sea.cc.ntpu.edu.tw/pls/dev_stud/course_query_all.CHI_MAIN" target="_blank" external rel="noopener noreferrer">校版課程查詢系統</NuxtLink>
