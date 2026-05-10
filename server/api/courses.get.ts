@@ -96,7 +96,7 @@ export default defineEventHandler(async (event) => {
           // 明確檢查擷取群組 [1] 是否存在，以避免 TypeScript strict mode 警告
           if (cdeptMatch && cdeptMatch[1] && coursenoMatch && coursenoMatch[1]) {
             enterLimitCode = [cdeptMatch[1], coursenoMatch[1]]
-            enterLimitUrl = `/limit/enter?dept=${cdeptMatch[1]}&course=${coursenoMatch[1]}`
+            enterLimitUrl = `/restrictions/block?department=${cdeptMatch[1]}&course=${coursenoMatch[1]}`
           }
         } else if (lineHtml.includes('btn.gif') || lineHtml.includes('有擋修')) {
           // 防呆：若有圖示但無連結，仍標示為擋修
@@ -150,9 +150,9 @@ export default defineEventHandler(async (event) => {
           }
           
           // 重新組裝為內部路由網址 (此時 params.toString() 會輸出如 yearterm=1142&course=M6135)
-          commonLimit.limitUrl = `/limit/rule?${params.toString()}`
+          commonLimit.limitUrl = `/restrictions/course?${params.toString()}`
         } else {
-          commonLimit.limitUrl = '/limit/rule'
+          commonLimit.limitUrl = '/restrictions/course'
         }
       } else if (getHtml(7).includes('btn_lm.gif') || getHtml(7).includes('有課程限制')) {
         commonLimit.hasLimit = true

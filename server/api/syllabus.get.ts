@@ -53,7 +53,7 @@ export default defineEventHandler(async (event) => {
         
         if (cdeptMatch && cdeptMatch[1] && coursenoMatch && coursenoMatch[1]) {
           enterLimitCode = [cdeptMatch[1], coursenoMatch[1]]
-          enterLimitUrl = `/limit/enter?dept=${cdeptMatch[1]}&course=${coursenoMatch[1]}`
+          enterLimitUrl = `/restrictions/block?department=${cdeptMatch[1]}&course=${coursenoMatch[1]}`
         }
       } else if (partHtml.includes('btn.gif') || partHtml.includes('有擋修')) {
         hasEnterLimit = true
