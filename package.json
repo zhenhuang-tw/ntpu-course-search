@@ -1,0 +1,23 @@
+{
+  "name": "ntpu-course-search",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "@picocss/pico": "^2.1.1",
+    "cheerio": "^1.2.0",
+    "iconv-lite": "^0.7.2",
+    "nuxt": "^4.4.4",
+    "vue": "^3.5.33",
+    "vue-router": "^5.0.6"
+  },
+  "devDependencies": {
+    "@types/iconv-lite": "^0.0.1"
+  }
+}
