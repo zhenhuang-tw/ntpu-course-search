@@ -19,14 +19,14 @@ export default defineEventHandler(async (event) => {
 
   // 1. 組裝送往校方系統的 POST Body
   const params = [
-    `qYear=${query.qYear || ''}`,
-    `qTerm=${query.qTerm || ''}`,
-    `courseno=${query.courseno || ''}`,
-    `cour=${encodeBig5Url(query.cour as string)}`,
-    `teach=${encodeBig5Url(query.teach as string)}`,
-    `week=${query.week || ''}`,
-    `seq1=${query.seq1 || 'A'}`,
-    `seq2=${query.seq2 || 'M'}`
+    `qYear=${query.year || ''}`,
+    `qTerm=${query.term || ''}`,
+    `courseno=${query.courseCode || ''}`,
+    `cour=${encodeBig5Url(query.courseName as string)}`,
+    `teach=${encodeBig5Url(query.teacherName as string)}`,
+    `week=${query.dayOfWeek || ''}`,
+    `seq1=${query.startSlot || 'A'}`,
+    `seq2=${query.endSlot || 'M'}`
   ]
   const bodyString = params.join('&')
 
