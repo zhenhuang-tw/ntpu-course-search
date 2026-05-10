@@ -168,7 +168,7 @@ export default defineEventHandler(async (event) => {
         const t = syllabusUrlRaw.match(/g_term=([^&]+)/)
         
         if (s && s[1] && y && y[1] && t && t[1]) {
-          syllabusUrl = `/syllabus?q=${s[1]},${y[1]},${t[1]}`
+          syllabusUrl = `/syllabus?course=${s[1]}&year=${y[1]}&term=${t[1]}`
         }
       }
 
