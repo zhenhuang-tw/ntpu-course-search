@@ -10,6 +10,9 @@ export default defineNuxtConfig({
   
   app: {
     head: {
+      htmlAttrs: {
+        lang: 'zh-TW'
+      },
       titleTemplate: '%s - ' + appName,
       title: '響應式的課程查詢系統',
       meta: [
