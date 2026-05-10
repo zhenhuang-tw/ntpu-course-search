@@ -59,7 +59,7 @@ const course = computed(() => response.value?.data)
 // 3. 設定動態標題
 useHead({
   title: computed(() => course.value?.basic.titleZh 
-    ? `${course.value.basic.titleZh} - 課程大綱` 
+    ? `${course.value.basic.year}-${course.value.basic.term}「${course.value.basic.titleZh}」課程大綱` 
     : '課程大綱載入中')
 })
 </script>
@@ -86,7 +86,7 @@ useHead({
 
       <nav aria-label="breadcrumb">
         <ul>
-          <li><NuxtLink to="/">搜尋首頁</NuxtLink></li>
+          <li><NuxtLink to="/">搜尋課程</NuxtLink></li>
           <li><a href="javascript:void(0)" @click.prevent="router.back()" data-tooltip="返回瀏覽紀錄的上一頁">返回搜尋結果</a></li>
           <li>課程大綱</li>
         </ul>
