@@ -109,13 +109,11 @@ const showTermColumn = computed(() => !route.query.term)
               </td>
               <td>
                 <div v-for="(item, idx) in course.designatedFor" :key="idx">
+                  {{ item.grade }}
                   <template v-if="item.hasEnterLimit">
-                    <NuxtLink :to="item.enterLimitUrl" style="color: var(--pico-ins-color);">
-                      {{ item.grade }} [擋]
+                    <NuxtLink :to="item.enterLimitUrl" style="color: var(--pico-ins-color); display: inline;">
+                       [擋]
                     </NuxtLink>
-                  </template>
-                  <template v-else>
-                    {{ item.grade }}
                   </template>
                   <small> ({{ item.type }})</small>
                 </div>
