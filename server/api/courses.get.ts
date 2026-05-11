@@ -205,7 +205,16 @@ export default defineEventHandler(async (event) => {
         ? `限修 ${limitCount} 人\n${selectedCount} 人已選\n${approvedCount} 人已核准\n${pendingCount} 人待分發\n\n${signStatus}`
         : `限修 ${limitCount} 人\n${selectedCount} 人已選\n(目前非選課期間，無核准與分發資料)\n\n${signStatus}`
 
-      // 5. 輸出結構化資料
+      // 5. 獲取教師課表連結
+      const $teacherTd = cheerio.load(getHtml(8))
+      const teachers = $teacherTd('a')
+        .map((_, el) => ({
+          name: $teacherTd(el).text().trim(),
+          scheduleUrl: $teacherTd(el).attr('href') || '',
+        }))
+        .get() // 將 Cheerio 陣列轉為原生 JS 陣列
+
+      // 6. 輸出結構化資料
       courses.push({
         year: cleanText(1),
         term: cleanText(2),
@@ -214,7 +223,7 @@ export default defineEventHandler(async (event) => {
         designatedFor,
         commonLimit,
         title: { zh: titleZh, en: titleEn, notice, syllabusUrl },
-        teacher: cleanText(8),
+        teachers,
         duration: cleanText(9), // 半/全
         credits: cleanText(10),
         hours: cleanText(11),
