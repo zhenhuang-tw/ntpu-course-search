@@ -3,7 +3,6 @@
 
 import { getQuery } from 'h3'
 import * as cheerio from 'cheerio'
-import iconv from 'iconv-lite'
 
 export default defineCachedEventHandler(async (event) => {
   const query = getQuery(event)
@@ -17,12 +16,26 @@ export default defineCachedEventHandler(async (event) => {
   try {
     // 1. 組裝校方查詢 URL
     const url = `https://sea.cc.ntpu.edu.tw/pls/faculty/common.OPMS_lm.bylimit_checkshow?yearterm=${yearterm}&serial=${course}`
-    const response = await fetch(url)
     
-    if (!response.ok) throw new Error('校方系統無回應')
-
-    const arrayBuffer = await response.arrayBuffer()
-    const htmlUtf8 = iconv.decode(Buffer.from(arrayBuffer), 'big5')
+    
+        // 取得環境變數
+        const config = useRuntimeConfig(event)
+    
+        // 組合 GAS 查詢網址
+        const gasProxyUrl = config.gasProxyUrl
+        if (!gasProxyUrl) {
+          throw new Error('系統設定錯誤：缺少 GAS Proxy URL')
+        }
+        const fetchUrl = `${gasProxyUrl}?url=${encodeURIComponent(url)}`
+    
+        // 取得 DOM 並以 cheerio 解析之
+        const response = await fetch(fetchUrl)
+        if (!response.ok) throw new Error('GAS 中繼站無回應')
+        const htmlUtf8 = await response.text()
+        // 檢查是不是 GAS 回傳的自訂錯誤訊息
+        if (htmlUtf8.startsWith('錯誤：') || htmlUtf8.startsWith('GAS 抓取失敗:')) {
+          throw new Error(htmlUtf8)
+        }
     
     // 檢查是否不設限
     if (htmlUtf8.includes('此課程不設限')) {

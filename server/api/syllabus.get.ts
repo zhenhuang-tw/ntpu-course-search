@@ -1,6 +1,5 @@
 import { defineEventHandler, getQuery } from 'h3'
 import * as cheerio from 'cheerio'
-import iconv from 'iconv-lite'
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)
@@ -13,13 +12,35 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    const url = `https://sea.cc.ntpu.edu.tw/pls/dev_stud/course_query.queryguide?g_year=${year}&g_term=${term}&g_serial=${course}&show_info=all`
-    const response = await fetch(url)
+    // 1. 取得環境變數
+    const config = useRuntimeConfig(event)
+    const gasProxyUrl = config.gasProxyUrl
+  
+    if (!gasProxyUrl) {
+      throw new Error('系統設定錯誤：缺少 GAS Proxy URL')
+    }
+  
+    // 2. 組合網址
     
-    if (!response.ok) throw new Error('校方系統無回應')
+    // 學校的目標網址
+    const schoolUrl = `https://sea.cc.ntpu.edu.tw/pls/dev_stud/course_query.queryguide?g_year=${year}&g_term=${term}&g_serial=${course}&show_info=all`
+    
+    // 將學校網址經過 encodeURIComponent 包裝後，傳給 GAS
+    const fetchUrl = `${gasProxyUrl}?url=${encodeURIComponent(schoolUrl)}`
+    
+    // 直接 Fetch GAS 的網址
+    const response = await fetch(fetchUrl)
+    if (!response.ok) throw new Error('GAS 中繼站無回應')
 
-    const arrayBuffer = await response.arrayBuffer()
-    const htmlUtf8 = iconv.decode(Buffer.from(arrayBuffer), 'big5')
+    // GAS 已經把 Big5 轉好 UTF-8 了，直接拿 text() 即可，
+    // 無須如舊版使用 iconv-lite 轉換
+    const htmlUtf8 = await response.text()
+    
+    // 檢查是不是 GAS 回傳的自訂錯誤訊息
+    if (htmlUtf8.startsWith('錯誤：') || htmlUtf8.startsWith('GAS 抓取失敗:')) {
+      throw new Error(htmlUtf8)
+    }
+
     const $ = cheerio.load(htmlUtf8)
 
     // 1. 輔助函式：利用正則表達式擷取特定標籤內的文字

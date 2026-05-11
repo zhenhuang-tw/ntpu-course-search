@@ -31,19 +31,32 @@ export default defineEventHandler(async (event) => {
   const bodyString = params.join('&')
 
   try {
-    // 2. 向校方系統發送 POST 請求
-    const response = await fetch('https://sea.cc.ntpu.edu.tw/pls/dev_stud/course_query_all.queryByKeyword', {
+
+    // 2-1. 取得環境變數中的 GAS 代理網址
+    const config = useRuntimeConfig(event)
+    const gasProxyUrl = config.gasProxyUrl
+    
+    if (!gasProxyUrl) {
+      throw new Error('系統設定錯誤：缺少 GAS Proxy URL')
+    }
+    
+    // 2-2. 向 GAS 系統發送 POST 請求 (GAS 的 doPost 會接手轉發)
+    const targetUrl = 'https://sea.cc.ntpu.edu.tw/pls/dev_stud/course_query_all.queryByKeyword'
+    const fetchUrl = `${gasProxyUrl}?url=${encodeURIComponent(targetUrl)}`
+    const response = await fetch(fetchUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: bodyString
     })
-
-    if (!response.ok) throw new Error('校方系統無回應，可能在向其查詢時發生了錯誤。')
-
-    // 3. 處理 BIG5 回傳結果
-    const arrayBuffer = await response.arrayBuffer()
-    const htmlUtf8 = iconv.decode(Buffer.from(arrayBuffer), 'big5')
-
+    
+    if (!response.ok) throw new Error('GAS 中繼站無回應')
+    
+    // 3. 直接取得轉換好的 UTF-8 純文字
+    const htmlUtf8 = await response.text()
+    if (htmlUtf8.startsWith('錯誤：') || htmlUtf8.startsWith('GAS POST 抓取失敗:')) {
+      throw new Error(htmlUtf8)
+    }
+    
     // 4. 使用 cheerio 解析 DOM
     const $ = cheerio.load(htmlUtf8)
     const courses: any[] = []

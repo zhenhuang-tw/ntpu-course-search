@@ -23,6 +23,10 @@ export default defineNuxtConfig({
       ]
     }
   },
+  runtimeConfig: {
+    // 這裡定義僅限伺服器端 (server/api) 讀取的變數
+    gasProxyUrl: process.env.NUXT_GAS_PROXY_URL || '', 
+  },
 
   nitro: {
     preset: 'cloudflare_pages',
