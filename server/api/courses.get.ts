@@ -37,44 +37,37 @@ export default defineEventHandler(async (event) => {
     const gasProxyUrl = config.gasProxyUrl
     
     if (!gasProxyUrl) {
-      throw new Error('系統設定錯誤：缺少 GAS Proxy URL')
+      throw createError({ statusCode: 500, statusMessage: '系統設定錯誤：缺少 GAS Proxy URL' })
     }
     
-    // 2-2. 向 GAS 系統發送 POST 請求 (GAS 的 doPost 會接手轉發)
+    // 2-2. 目標學校系統網址
     const targetUrl = 'https://sea.cc.ntpu.edu.tw/pls/dev_stud/course_query_all.queryByKeyword'
-    const fetchUrl = `${gasProxyUrl}?url=${encodeURIComponent(targetUrl)}`
     
-    // 設定 redirect: 'manual'，避免 Cloudflare 自動跟隨 POST 導向而產生錯誤請求
-    const response = await fetch(fetchUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: bodyString,
-      redirect: 'manual' 
-    })
+    // 將原本的 POST 參數，全部透過 encodeURIComponent 編碼後塞入 GET 網址中
+    const fetchUrl = `${gasProxyUrl}?url=${encodeURIComponent(targetUrl)}&method=POST&payload=${encodeURIComponent(bodyString)}`
     
     let htmlUtf8 = ''
 
-    // 3. 手動處理 GAS 的 302 重新導向機制
-    if (response.status === 302 || response.status === 303) {
-      const redirectUrl = response.headers.get('location')
-      if (!redirectUrl) {
-        throw new Error('GAS 重新導向失敗：找不到 Location 標頭')
+    try {
+      
+      const response = await fetch(fetchUrl)
+      
+      if (!response.ok) {
+        throw new Error(`GAS 中繼站無回應 (HTTP 狀態碼: ${response.status})`)
       }
       
-      // 對重新導向的網址發送 GET 請求，取得最終的純文字結果
-      const redirectResponse = await fetch(redirectUrl)
-      if (!redirectResponse.ok) throw new Error('GAS 中繼站重新導向後無回應')
-      
-      htmlUtf8 = await redirectResponse.text()
-    } else if (response.ok) {
-      // 備用處理：若直接回傳 200 的狀況
       htmlUtf8 = await response.text()
-    } else {
-      throw new Error('GAS 中繼站無回應')
-    }
-    
-    if (htmlUtf8.startsWith('錯誤：') || htmlUtf8.startsWith('GAS POST 抓取失敗:')) {
-      throw new Error(htmlUtf8)
+      
+      if (htmlUtf8.startsWith('錯誤：') || htmlUtf8.startsWith('GAS 抓取失敗:')) {
+        throw new Error(htmlUtf8)
+      }
+      
+    } catch (error: any) {
+      // 捕捉真實錯誤並拋給前端，避免被 Nitro 直接覆寫為無意義的 500
+      throw createError({
+        statusCode: 502,
+        statusMessage: error.message || '無法連線至校方系統或 GAS 中繼端點'
+      })
     }
     
     // 4. 使用 cheerio 解析 DOM

@@ -43,6 +43,8 @@ If you are forking this project or deploying it on your own server, you need to 
 function doGet(e) {
   // 1. 從請求網址中取出目標網址 (url 參數)
   var targetUrl = e.parameter.url;
+  var reqMethod = e.parameter.method || "get"; // 接收前端指定的 method，預設為 get
+  var payload = e.parameter.payload || "";     // 接收前端傳來的 post payload
 
   if (!targetUrl) {
     return ContentService.createTextOutput("錯誤：缺少 url 參數")
@@ -50,16 +52,24 @@ function doGet(e) {
   }
 
   try {
-    // 2. 讓 Google 伺服器去向學校要資料 (附帶基礎偽裝)
-    var response = UrlFetchApp.fetch(targetUrl, {
-      "method": "get",
+    // 2. 讓 Google 伺服器去向學校要資料
+    var options = {
+      "method": reqMethod.toLowerCase(),
       "muteHttpExceptions": true, // 即使學校網頁報錯，也不要讓 GAS 崩潰
       "headers": {
         // 遵守爬蟲禮儀：宣告專案名稱、專案網址與聯絡信箱
         "User-Agent": "專案名稱/版本 (+專案網址; 您的聯絡信箱)",
         "Referer": "https://sea.cc.ntpu.edu.tw/"
       }
-    });
+    };
+
+    // 如果 Nuxt 指示這是一次 POST 請求，就把 payload 塞進去
+    if (reqMethod.toLowerCase() === "post") {
+      options.contentType = "application/x-www-form-urlencoded";
+      options.payload = payload; 
+    }
+
+    var response = UrlFetchApp.fetch(targetUrl, options);
 
     // 3. 學校網頁是 Big5 編碼，直接讓 GAS 轉成 UTF-8！
     var html = response.getContentText("big5");
@@ -73,38 +83,9 @@ function doGet(e) {
                          .setMimeType(ContentService.MimeType.TEXT);
   }
 }
+
+// doPost 保留作為相容性備用，內容直接轉介給 doGet 處理邏輯
 function doPost(e) {
-  var targetUrl = e.parameter.url;
-
-  if (!targetUrl) {
-    return ContentService.createTextOutput("錯誤：缺少 url 參數")
-                         .setMimeType(ContentService.MimeType.TEXT);
-  }
-
-  try {
-    // 取得 Nuxt 前端傳來的 POST Payload (bodyString) 與 Content-Type
-    var payload = e.postData ? e.postData.contents : "";
-    var contentType = e.postData ? e.postData.type : "application/x-www-form-urlencoded";
-
-    var response = UrlFetchApp.fetch(targetUrl, {
-      "method": "post",
-      "contentType": contentType, // 動態套用傳入的 Content-Type
-      "payload": payload,         // 轉發 bodyString
-      "muteHttpExceptions": true,
-      "headers": {
-        "User-Agent": "同上",
-        "Referer": "https://sea.cc.ntpu.edu.tw/"
-      }
-    });
-
-    var html = response.getContentText("big5");
-
-    return ContentService.createTextOutput(html)
-                         .setMimeType(ContentService.MimeType.TEXT);
-                         
-  } catch (err) {
-    return ContentService.createTextOutput("GAS POST 抓取失敗: " + err.message)
-                         .setMimeType(ContentService.MimeType.TEXT);
-  }
+  return doGet(e);
 }
 ```
