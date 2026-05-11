@@ -210,7 +210,9 @@ export default defineEventHandler(async (event) => {
       const teachers = $teacherTd('a')
         .map((_, el) => ({
           name: $teacherTd(el).text().trim(),
-          scheduleUrl: $teacherTd(el).attr('href') || '',
+          scheduleUrl: ($teacherTd(el).attr('href') || '').replace( '../',
+            'https://sea.cc.ntpu.edu.tw/pls/'
+          ),
         }))
         .get() // 將 Cheerio 陣列轉為原生 JS 陣列
 
