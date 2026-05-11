@@ -41,6 +41,11 @@ export default defineEventHandler(async (event) => {
       throw new Error(htmlUtf8)
     }
 
+    // 檢查學校頁面是否回傳「無此課程」
+    if (htmlUtf8.includes('<h1 class="font-c15">無此課程！</h1>')) {
+      return { success: false, message: '查無此課程，請確認課程代碼、學年度與學期是否正確。', data: null }
+    }
+
     const $ = cheerio.load(htmlUtf8)
 
     // 1. 輔助函式：利用正則表達式擷取特定標籤內的文字
