@@ -137,7 +137,13 @@ const showTermColumn = computed(() => !route.query.term)
                   </NuxtLink>
                 </div>
               </td>
-              <td>{{ course.teacher }}</td>
+              <td>
+                <template v-for="(t, i) in course.teachers" :key="i">
+                  <a :href="t.scheduleUrl" target="_blank" rel="noopener" style="display: block;">
+                    {{ t.name }}
+                  </a>
+                </template>
+              </td>
               <td style="white-space: nowrap;">{{ course.duration }}<small>學年</small>
               <br />{{ course.credits }} <small>學分</small>
               <br />{{ course.hours }} <small>小時</small></td>
