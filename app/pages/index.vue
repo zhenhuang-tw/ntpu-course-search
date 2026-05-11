@@ -1,7 +1,8 @@
 <script setup lang="ts">
 /**
- * 課程查詢首頁
- * 參數命名已重構為語意化格式，對齊 API 實作
+ * app/pages/index.vue
+ * 課程查詢頁面
+ * 提供一個 HTML Form 讓使用者提供查詢條件
  */
 const router = useRouter()
 

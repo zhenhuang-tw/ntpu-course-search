@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
- * 課程擋修規定 (先修條件) 頁面
- * 採用 Pico CSS (Class 版本) 實作
+ * app/pages/restrictions/block.vue
+ * 課程擋修規定 (必須先修過某課程, block restrictions) 頁面
  */
 const route = useRoute()
 const router = useRouter()

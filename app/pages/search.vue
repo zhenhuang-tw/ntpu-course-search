@@ -1,5 +1,6 @@
 <script setup lang="ts">
 /**
+ * app/pages/search.vue
  * 課程搜尋結果頁面
  * 接收路由參數並呼叫後端 API 進行資料展示
  */

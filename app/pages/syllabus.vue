@@ -1,5 +1,6 @@
 <script setup lang="ts">
 /**
+ * app/pages/syllabus.vue
  * 課程大綱頁面
  * 採用 Pico CSS (Class 版本) 與原生 HTML 語意化標籤實作響應式佈局
  */
