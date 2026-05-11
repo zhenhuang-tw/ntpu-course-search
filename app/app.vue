@@ -52,8 +52,12 @@ onMounted(() => {
           </li>
         </ul>
         <ul>
-          <li><NuxtLink to="/">搜尋課程</NuxtLink></li>
           <li>
+            <NuxtLink to="/">
+              搜尋<span class="desktop-only">課程</span>
+            </NuxtLink>
+          </li>
+          <li class="desktop-only">
             <a 
               href="https://sea.cc.ntpu.edu.tw/pls/dev_stud/course_query_all.CHI_MAIN" 
               target="_blank" 
@@ -68,8 +72,8 @@ onMounted(() => {
               @click="toggleTheme" 
               style="padding: 4px 8px; margin-bottom: 0;"
             >
-              <span v-if="theme === 'dark'">☀️ 亮色</span>
-              <span v-else>🌙 暗色</span>
+              <span v-if="theme === 'dark'">☀️ 亮<span class="desktop-only">色</span></span>
+              <span v-else>🌙 暗<span class="desktop-only">色</span></span>
             </button>
           </li>
         </ul>
@@ -119,5 +123,12 @@ main {
 /* 確保按鈕在導航列中的垂直對齊 */
 nav ul li button {
   font-size: 0.8rem;
+}
+
+/* Pico 的 md breakpoint 是 768px */
+@media (max-width: 768px) {
+  .desktop-only {
+    display: none;
+  }
 }
 </style>
