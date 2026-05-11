@@ -43,16 +43,36 @@ export default defineEventHandler(async (event) => {
     // 2-2. 向 GAS 系統發送 POST 請求 (GAS 的 doPost 會接手轉發)
     const targetUrl = 'https://sea.cc.ntpu.edu.tw/pls/dev_stud/course_query_all.queryByKeyword'
     const fetchUrl = `${gasProxyUrl}?url=${encodeURIComponent(targetUrl)}`
+    
+    // 設定 redirect: 'manual'，避免 Cloudflare 自動跟隨 POST 導向而產生錯誤請求
     const response = await fetch(fetchUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: bodyString
+      body: bodyString,
+      redirect: 'manual' 
     })
     
-    if (!response.ok) throw new Error('GAS 中繼站無回應')
+    let htmlUtf8 = ''
+
+    // 3. 手動處理 GAS 的 302 重新導向機制
+    if (response.status === 302 || response.status === 303) {
+      const redirectUrl = response.headers.get('location')
+      if (!redirectUrl) {
+        throw new Error('GAS 重新導向失敗：找不到 Location 標頭')
+      }
+      
+      // 對重新導向的網址發送 GET 請求，取得最終的純文字結果
+      const redirectResponse = await fetch(redirectUrl)
+      if (!redirectResponse.ok) throw new Error('GAS 中繼站重新導向後無回應')
+      
+      htmlUtf8 = await redirectResponse.text()
+    } else if (response.ok) {
+      // 備用處理：若直接回傳 200 的狀況
+      htmlUtf8 = await response.text()
+    } else {
+      throw new Error('GAS 中繼站無回應')
+    }
     
-    // 3. 直接取得轉換好的 UTF-8 純文字
-    const htmlUtf8 = await response.text()
     if (htmlUtf8.startsWith('錯誤：') || htmlUtf8.startsWith('GAS POST 抓取失敗:')) {
       throw new Error(htmlUtf8)
     }
