@@ -1,29 +1,17 @@
 import { defineEventHandler, getQuery } from 'h3'
 import * as cheerio from 'cheerio'
-import iconv from 'iconv-lite'
-
-// 輔助函式：將字串轉為 BIG5 的 URL encoded 格式
-// 因為 URLSearchParams 預設使用 UTF-8，校方系統需要 BIG5 的 URL Encode
-function encodeBig5Url(str: string | undefined): string {
-  if (!str) return ''
-  const buf = iconv.encode(str, 'big5')
-  let encoded = ''
-  for (const byte of buf) {
-    encoded += '%' + byte.toString(16).toUpperCase()
-  }
-  return encoded
-}
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)
 
   // 1. 組裝送往校方系統的 POST Body
+  // 傳送 UTF-8 字串，轉碼 Big5 的工作移交給 GAS Proxy 處理
   const params = [
     `qYear=${query.year || ''}`,
     `qTerm=${query.term || ''}`,
     `courseno=${query.courseCode || ''}`,
-    `cour=${encodeBig5Url(query.courseName as string)}`,
-    `teach=${encodeBig5Url(query.teacherName as string)}`,
+    `cour=${query.courseName || ''}`,
+    `teach=${query.teacherName || ''}`,
     `week=${query.dayOfWeek || ''}`,
     `seq1=${query.startSlot || 'A'}`,
     `seq2=${query.endSlot || 'M'}`
