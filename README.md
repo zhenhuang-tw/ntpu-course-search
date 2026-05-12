@@ -66,7 +66,38 @@ function doGet(e) {
     // 如果 Nuxt 指示這是一次 POST 請求，就把 payload 塞進去
     if (reqMethod.toLowerCase() === "post") {
       options.contentType = "application/x-www-form-urlencoded";
-      options.payload = payload; 
+      
+      // --- 在 GAS 端將 UTF-8 payload 轉換為校方要求的 Big5 編碼 ---
+      var big5Payload = "";
+      var pairs = payload.split('&');
+      for (var i = 0; i < pairs.length; i++) {
+        var pair = pairs[i].split('=');
+        var key = pair[0];
+        
+        // 不需要 decodeURIComponent。因為 e.parameter 已自動解碼，這裡已經是純中文。
+        // 使用 slice(1).join('=') 防止 value 內部本身包含等號被切斷。
+        var value = pair.slice(1).join('='); 
+        
+        var encodedValue = "";
+        if (value !== "") {
+          var bytes = Utilities.newBlob("").setDataFromString(value, "Big5").getBytes();
+          for (var j = 0; j < bytes.length; j++) {
+            var b = bytes[j] & 0xFF;
+            
+            // 保留基本英數字不編碼，其餘字元轉 16 進位並確保補齊兩位數（如 0A）
+            if ((b >= 0x30 && b <= 0x39) || (b >= 0x41 && b <= 0x5A) || (b >= 0x61 && b <= 0x7A)) {
+               encodedValue += String.fromCharCode(b);
+            } else {
+               var hex = b.toString(16).toUpperCase();
+               if (hex.length === 1) hex = "0" + hex;
+               encodedValue += "%" + hex;
+            }
+          }
+        }
+        big5Payload += (i > 0 ? "&" : "") + key + "=" + encodedValue;
+      }
+      options.payload = big5Payload; 
+      // -- Big5 轉換 -----------------------------------------------------------
     }
 
     var response = UrlFetchApp.fetch(targetUrl, options);
