@@ -20,7 +20,7 @@ const getDefaultYearTerm = (): { year: string; term: string } => {
   const mmdd = month * 100 + day
 
   if (mmdd >= 803 && mmdd <= 1215) {
-    // 可查第 1 學期：x年 8/3 ~ 12/15
+    // 第 1 學期：x年 8/3 ~ 12/15
     return {
       year: String(now.getFullYear() - 1911),
       term: '1',
@@ -40,25 +40,29 @@ const getDefaultYearTerm = (): { year: string; term: string } => {
   }
 }
 
-// 2. 定義語意化表單狀態
-const searchForm = reactive({
+// 2. 表單初始狀態工廠（統一管理，resetForm 直接呼叫）
+const getInitialForm = () => ({
   ...getDefaultYearTerm(),
   courseCode: '',
   courseName: '',
   teacherName: '',
   dayOfWeek: '',
   startSlot: 'A',
-  endSlot: 'M'
+  endSlot: 'M',
 })
 
-// 3. 生成年份選項
-const currentYear = 114
+// 3. 定義語意化表單狀態
+const searchForm = reactive(getInitialForm())
+
+// 4. 生成年份選項
+// 上限取自 getDefaultYearTerm()，語意等同「目前最新學年度」（例：2026年1~7月上限仍為114，8/3後才升為115）
+const currentYear = Number(getDefaultYearTerm().year)
 const startYear = 90
-const years = Array.from({ length: currentYear - startYear + 1 }, (_, i) => {
-  return (currentYear - i).toString().padStart(3, '0')
-})
+const years = Array.from({ length: currentYear - startYear + 1 }, (_, i) =>
+  String(currentYear - i)
+)
 
-// 4. 節次定義
+// 5. 節次定義
 const timeSlots = [
   { val: 'A', label: '1 (08:10~09:00)' },
   { val: 'B', label: '2 (09:10~10:00)' },
@@ -75,7 +79,7 @@ const timeSlots = [
   { val: 'M', label: 'D (21:20~22:10)' }
 ]
 
-// 5. 提交處理
+// 6. 提交處理
 const submitSearch = () => {
   router.push({
     path: '/search',
@@ -83,20 +87,10 @@ const submitSearch = () => {
   })
 }
 
-// 6. 重置處理
-const resetForm = () => {
-  Object.assign(searchForm, {
-    ...getDefaultYearTerm(),
-    courseCode: '',
-    courseName: '',
-    teacherName: '',
-    dayOfWeek: '',
-    startSlot: 'A',
-    endSlot: 'M'
-  })
-}
+// 7. 重置處理
+const resetForm = () => Object.assign(searchForm, getInitialForm())
 
-// 7. 控制說明彈窗
+// 8. 控制說明彈窗
 const isGuideVisible = ref(false)
 </script>
 
@@ -174,7 +168,7 @@ const isGuideVisible = ref(false)
           </label>
         </div>
         <small>
-          <a href="javascript:void(0)" @click="isGuideVisible = true">如何使用節次搜尋說明？</a>
+          <button type="button" role="link" @click="isGuideVisible = true">如何使用節次搜尋說明？</button>
         </small>
       </fieldset>
 
