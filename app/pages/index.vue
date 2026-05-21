@@ -6,10 +6,43 @@
  */
 const router = useRouter()
 
-// 1. 定義語意化表單狀態
+// 1. 依現在時間推算預設學年度與學期
+// 預設規則：
+//   x年 8/3 ~ 12/15  → 第 1 學期，學年度 = x - 1911
+//   x年 12/16 ~ 隔年 8/2 → 第 2 學期，學年度 = x - 1911（跨年後仍取 12/16 所在之西元年）
+// 注意：此非精確之提供查詢時間，蓋學校每年運作不同。
+const getDefaultYearTerm = (): { year: string; term: string } => {
+  const now = new Date()
+  const month = now.getMonth() + 1 // 1–12
+  const day = now.getDate()
+
+  // 將日期壓縮為 MMDD 整數，方便範圍比較
+  const mmdd = month * 100 + day
+
+  if (mmdd >= 803 && mmdd <= 1215) {
+    // 可查第 1 學期：x年 8/3 ~ 12/15
+    return {
+      year: String(now.getFullYear() - 1911),
+      term: '1',
+    }
+  } else if (mmdd >= 1216) {
+    // 可查第 2 學期（年底）：x年 12/16 ~ 12/31
+    return {
+      year: String(now.getFullYear() - 1911),
+      term: '2',
+    }
+  } else {
+    // 前半第 2 學期（跨年）：x年 1/1 ~ 8/2，學年度屬於前一西元年
+    return {
+      year: String(now.getFullYear() - 1 - 1911),
+      term: '2',
+    }
+  }
+}
+
+// 2. 定義語意化表單狀態
 const searchForm = reactive({
-  year: '114',
-  term: '2',
+  ...getDefaultYearTerm(),
   courseCode: '',
   courseName: '',
   teacherName: '',
@@ -18,14 +51,14 @@ const searchForm = reactive({
   endSlot: 'M'
 })
 
-// 2. 生成年份選項
+// 3. 生成年份選項
 const currentYear = 114
 const startYear = 90
 const years = Array.from({ length: currentYear - startYear + 1 }, (_, i) => {
   return (currentYear - i).toString().padStart(3, '0')
 })
 
-// 3. 節次定義
+// 4. 節次定義
 const timeSlots = [
   { val: 'A', label: '1 (08:10~09:00)' },
   { val: 'B', label: '2 (09:10~10:00)' },
@@ -42,7 +75,7 @@ const timeSlots = [
   { val: 'M', label: 'D (21:20~22:10)' }
 ]
 
-// 4. 提交處理
+// 5. 提交處理
 const submitSearch = () => {
   router.push({
     path: '/search',
@@ -50,11 +83,10 @@ const submitSearch = () => {
   })
 }
 
-// 5. 重置處理
+// 6. 重置處理
 const resetForm = () => {
   Object.assign(searchForm, {
-    year: '114',
-    term: '2',
+    ...getDefaultYearTerm(),
     courseCode: '',
     courseName: '',
     teacherName: '',
@@ -64,7 +96,7 @@ const resetForm = () => {
   })
 }
 
-// 6. 控制說明彈窗
+// 7. 控制說明彈窗
 const isGuideVisible = ref(false)
 </script>
 
